@@ -1,58 +1,70 @@
 # FirmaCheck
 
-![FirmaCheck logo](./public/logo.webp)
+## 1. Popis projektu
 
-Webová aplikace pro ověřování českých firem podle IČO. Zobrazí základní informace z registru ARES, polohu sídla na mapě, umožní firmy ukládat do seznamu a exportovat do CSV.
+FirmaCheck je webová aplikace pro ověřování českých firem podle IČO. Uživatel zadá osmimístné IČO a aplikace zobrazí základní informace z registru ARES, interaktivní mapu sídla firmy, umožní firmu uložit do seznamu a celý seznam exportovat do CSV.
 
-## Funkce
+**Live demo:** [https://firmacheck-cyan.vercel.app](https://firmacheck-cyan.vercel.app)
 
-- Vyhledání firmy podle IČO (8 číslic) v registru ARES
-- Zobrazení karty firmy: název, IČO, adresa, právní forma, datum vzniku
-- Interaktivní mapa sídla (Leaflet + OpenStreetMap) s geokódováním přes Nominatim
-- Uložení firmy do lokální SQLite databáze
-- Tabulka uložených firem s exportem do CSV
+## 2. Funkce
 
-## Architektura
+- Vyhledávání firmy podle IČO přes ARES API
+- SQLite cache výsledků (TTL 24 hodin)
+- Mapa sídla firmy (Leaflet + OpenStreetMap + Nominatim geokódování)
+- Uložení firem do lokální databáze
+- Export uložených firem do CSV
 
-```
-app/
-  page.tsx               – hlavní stránka (Client Component)
-  api/
-    firma/route.ts       – GET /api/firma?ico= → data z ARES nebo cache
-    ulozene/route.ts     – GET/POST /api/ulozene, GET ?export=csv
-    geocode/route.ts     – GET /api/geocode?adresa= → lat/lng z Nominatim
+## 3. Technologie
 
-lib/
-  db.ts                  – lazy inicializace SQLite (/tmp/firmacheck.db)
-  ares.ts                – fetchFirma(): cache → ARES API → parsování
+- **Next.js 16**, TypeScript, Tailwind CSS v4
+- **better-sqlite3** – SQLite cache a uložené firmy
+- **Leaflet.js** – interaktivní mapa
+- **ARES API** – `ares.gov.cz` – zdroj dat o firmách
+- **Nominatim** – geokódování adresy na souřadnice (OpenStreetMap)
 
-components/
-  FirmaMap.tsx           – Leaflet mapa (dynamicky importovaná, ssr: false)
-```
+## 4. Architektura
 
-### SQLite tabulky
+| Soubor | Účel |
+|--------|------|
+| `/app/api/firma` | ARES API + cache logika |
+| `/app/api/ulozene` | Správa uložených firem + CSV export |
+| `/app/api/geocode` | Geokódování adresy → lat/lng |
+| `/lib/db.ts` | Lazy inicializace SQLite (`/tmp/firmacheck.db`) |
+| `/lib/ares.ts` | `fetchFirma()` – cache → ARES → parsování |
+| `/components/FirmaMap.tsx` | Leaflet mapa (dynamický import, `ssr: false`) |
 
-| Tabulka | Sloupce |
-|---------|---------|
-| `cache_firem` | `ico`, `data` (JSON), `cached_at` (ms timestamp) |
-| `ulozene_firmy` | `id`, `ico`, `nazev`, `adresa`, `ulozeno_at` (ms timestamp) |
+## 5. AI nástroje použité při vývoji
 
-Cache firem má TTL 24 hodin. Databáze se vytváří při prvním požadavku v `/tmp/firmacheck.db`.
+- **Claude Code** (claude.ai) – generování veškerého kódu, debugging, návrh architektury
+- **Ideogram.ai** – generování loga aplikace
 
-## Spuštění
+## 6. Použité prompty (klíčové)
+
+1. **Úvodní prompt** – komplexní zadání celé aplikace: Next.js 16, App Router, TypeScript, Tailwind CSS, SQLite cache, ARES API, Leaflet mapa, uložené firmy, CSV export – vygenerovalo kompletní kódovou základnu v jednom kroku.
+
+2. **Oprava Leaflet race condition** – *„Map container is already initialized – přidej cancelled flag do useEffect aby async import('leaflet').then() neinicializoval mapu po cleanup"* – odhalilo a opravilo race condition mezi async importem Leaflet a React cleanup funkcí.
+
+3. **Generování loga (Ideogram.ai)** – *„Modern minimalist logo for a Czech company verification app called FirmaCheck. Dark blue background, stylized building/company icon combined with a checkmark, blue and white color scheme, clean sans-serif typography"*
+
+## 7. Postup vývoje a iterace
+
+1. **Inicializace** – `create-next-app` s TypeScript, Tailwind CSS a better-sqlite3
+2. **Generování kódu** – jeden prompt vygeneroval všechny soubory: `lib/db.ts`, `lib/ares.ts`, tři API route handlery, `page.tsx` a `FirmaMap.tsx`
+3. **Debugging** – oprava chyby Leaflet `Map container is already initialized` způsobené race condition v `useEffect` (async import + React Strict Mode double-invoke)
+4. **Logo** – vygenerováno v Ideogram.ai, přidáno do hlavičky stránky
+5. **Deploy** – nasazení na Vercel přes GitHub integraci
+
+## 8. Spuštění lokálně
 
 ```bash
 npm install
 npm run dev
 ```
 
-Aplikace běží na http://localhost:3000.
+Aplikace běží na [http://localhost:3000](http://localhost:3000).
 
-## Technologie
+## 9. AI vizuální prvek
 
-- **Next.js 16** (App Router, TypeScript)
-- **Tailwind CSS v4**
-- **better-sqlite3** – SQLite cache a uložené firmy
-- **Leaflet.js** – interaktivní mapa
-- **ARES API** – `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/`
-- **Nominatim** – geokódování adres (OpenStreetMap)
+![FirmaCheck logo](./public/logo.webp)
+
+Logo vygenerováno pomocí **Ideogram.ai**.
