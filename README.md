@@ -1,5 +1,7 @@
 # FirmaCheck
 
+![FirmaCheck logo](./public/logo.webp)
+
 Webová aplikace pro ověřování českých firem podle IČO. Zobrazí základní informace z registru ARES, polohu sídla na mapě, umožní firmy ukládat do seznamu a exportovat do CSV.
 
 ## Funkce

@@ -137,9 +137,12 @@ export default function Home() {
       <div className="max-w-2xl mx-auto px-4 py-10">
         {/* Header */}
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold mb-2" style={{ color: '#3b82f6' }}>
-            FirmaCheck
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <img src="/logo.webp" alt="FirmaCheck logo" width={48} height={48} />
+            <h1 className="text-4xl font-bold" style={{ color: '#3b82f6' }}>
+              FirmaCheck
+            </h1>
+          </div>
           <p style={{ color: '#94a3b8' }}>Ověření české firmy podle IČO z registru ARES</p>
         </div>
 
